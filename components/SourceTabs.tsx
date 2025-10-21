@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from 'react'
+import Link from 'next/link'
 import { Article, SourceID } from '@/lib/types'
 import NewsCard from './NewsCard'
 
@@ -17,7 +18,7 @@ const timeRanges: { id: 'all' | '24h' | '3d' | '7d' | '30d' | 'custom'; name: st
   { id: 'custom', name: '自定义' },
 ]
 
-export default function SourceTabs({ articles }: { articles: Article[] }) {
+export default function SourceTabs({ articles, page }: { articles: Article[]; page: number }) {
   const [active, setActive] = useState<SourceID>('aibase')
   const [q, setQ] = useState('')
   const [time, setTime] = useState<'all' | '24h' | '3d' | '7d' | '30d' | 'custom'>('all')
@@ -67,6 +68,10 @@ export default function SourceTabs({ articles }: { articles: Article[] }) {
     }
   }
 
+  const currentPage = Math.max(1, Number(page) || 1)
+  const prevPage = currentPage > 1 ? currentPage - 1 : 1
+  const nextPage = currentPage + 1
+
   return (
     <div>
       <div className="controls">
@@ -106,6 +111,12 @@ export default function SourceTabs({ articles }: { articles: Article[] }) {
         {filtered.map((a) => (
           <NewsCard key={`${a.source}:${a.id}`} article={a} />
         ))}
+      </div>
+
+      <div className="pagination">
+        <Link className="refresh" href={`/?page=${prevPage}`} aria-disabled={currentPage <= 1} style={{ pointerEvents: currentPage <= 1 ? 'none' : undefined, opacity: currentPage <= 1 ? 0.6 : undefined }}>上一页</Link>
+        <span className="muted">第 {currentPage} 页</span>
+        <Link className="refresh" href={`/?page=${nextPage}`}>下一页</Link>
       </div>
     </div>
   )
