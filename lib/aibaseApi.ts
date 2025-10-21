@@ -42,24 +42,74 @@ export async function fetchAIBaseDailyNews(options: AIBaseFetchOptions = {}): Pr
 
   const rawList: any[] = (() => {
     if (Array.isArray(json)) return json
-    const d = json?.data
+    const d = json?.data ?? json?.result ?? json?.response
     if (Array.isArray(d)) return d
-    if (Array.isArray(d?.list)) return d.list
-    if (Array.isArray(d?.items)) return d.items
-    if (Array.isArray(d?.records)) return d.records
-    if (Array.isArray(json?.list)) return json.list
-    if (Array.isArray(json?.items)) return json.items
+
+    const candidates = [
+      d?.list,
+      d?.items,
+      d?.records,
+      d?.rows,
+      d?.newsList,
+      d?.pageList,
+      d?.dataList,
+      d?.datas,
+      d?.resultList,
+    ]
+    for (const c of candidates) {
+      if (Array.isArray(c)) return c
+    }
+
+    const rootCandidates = [
+      json?.list,
+      json?.items,
+      json?.records,
+      json?.rows,
+      json?.newsList,
+      json?.pageList,
+      json?.dataList,
+      json?.datas,
+      json?.resultList,
+    ]
+    for (const c of rootCandidates) {
+      if (Array.isArray(c)) return c
+    }
+
+    const pickFirstArray = (obj: any): any[] | null => {
+      if (!obj || typeof obj !== 'object') return null
+      for (const v of Object.values(obj)) {
+        if (Array.isArray(v) && v.length && typeof v[0] === 'object') return v
+        if (v && typeof v === 'object') {
+          const found = pickFirstArray(v)
+          if (found) return found
+        }
+      }
+      return null
+    }
+    const found = pickFirstArray(json)
+    if (Array.isArray(found)) return found
     return []
   })()
 
   const mapped: Article[] = rawList.map((it) => {
-    const title: string | undefined = it?.title || it?.name || it?.newsTitle || it?.descTitle
-    const url: string | undefined = it?.url || it?.link || it?.newsLink || it?.jumpUrl
+    const title: string | undefined = it?.title || it?.name || it?.newsTitle || it?.descTitle || it?.subTitle || it?.headline || it?.subject
+    const url: string | undefined = it?.url || it?.link || it?.newsLink || it?.jumpUrl || it?.newsUrl || it?.sourceUrl || it?.originUrl
     if (!title || !url) return null as any
 
-    const summaryRaw: string | undefined = it?.summary || it?.desc || it?.intro || it?.brief || it?.digest || it?.content
-    const image: string | undefined = it?.image || it?.cover || it?.coverUrl || it?.pic || it?.thumbnail
-    const publishedAt = toISODate(it?.publishTime || it?.publishedAt || it?.time || it?.date || it?.publish_date)
+    const summaryRaw: string | undefined = it?.summary || it?.desc || it?.intro || it?.brief || it?.digest || it?.content || it?.abstract || it?.subTitle
+    const image: string | undefined = it?.image || it?.cover || it?.coverUrl || it?.pic || it?.thumbnail || it?.img || it?.imageUrl || it?.thumbUrl || it?.coverImg || it?.cover_image
+    const publishedAt = toISODate(
+      it?.publishTime ||
+      it?.publishedAt ||
+      it?.time ||
+      it?.date ||
+      it?.publish_date ||
+      it?.publish_time ||
+      it?.ctime ||
+      it?.createdAt ||
+      it?.createTime ||
+      it?.updateTime
+    )
 
     return {
       id: hash(url || title),
