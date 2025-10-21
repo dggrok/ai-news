@@ -44,7 +44,6 @@ export async function fetchAIBaseDailyNews(options: AIBaseFetchOptions = {}): Pr
     if (Array.isArray(json)) return json
     const d = json?.data ?? json?.result ?? json?.response
     if (Array.isArray(d)) return d
-
     const candidates = [
       d?.list,
       d?.items,
@@ -59,7 +58,6 @@ export async function fetchAIBaseDailyNews(options: AIBaseFetchOptions = {}): Pr
     for (const c of candidates) {
       if (Array.isArray(c)) return c
     }
-
     const rootCandidates = [
       json?.list,
       json?.items,
@@ -90,14 +88,13 @@ export async function fetchAIBaseDailyNews(options: AIBaseFetchOptions = {}): Pr
     if (Array.isArray(found)) return found
     return []
   })()
-
   const mapped: Article[] = rawList.map((it) => {
     const title: string | undefined = it?.title || it?.name || it?.newsTitle || it?.descTitle || it?.subTitle || it?.headline || it?.subject
-    const url: string | undefined = it?.url || it?.link || it?.newsLink || it?.jumpUrl || it?.newsUrl || it?.sourceUrl || it?.originUrl
+    const url: string | undefined = 'https://news.aibase.com/zh/daily/'+ it?.oid
     if (!title || !url) return null as any
 
     const summaryRaw: string | undefined = it?.summary || it?.desc || it?.intro || it?.brief || it?.digest || it?.content || it?.abstract || it?.subTitle
-    const image: string | undefined = it?.image || it?.cover || it?.coverUrl || it?.pic || it?.thumbnail || it?.img || it?.imageUrl || it?.thumbUrl || it?.coverImg || it?.cover_image
+    const image: string | undefined = it?.image || it?.cover || it?.coverUrl || it?.pic || it?.thumb || it?.img || it?.imageUrl || it?.thumbUrl || it?.coverImg || it?.cover_image
     const publishedAt = toISODate(
       it?.publishTime ||
       it?.publishedAt ||
@@ -110,8 +107,7 @@ export async function fetchAIBaseDailyNews(options: AIBaseFetchOptions = {}): Pr
       it?.createTime ||
       it?.updateTime
     )
-
-    return {
+    return ({
       id: hash(url || title),
       title,
       url,
@@ -120,7 +116,7 @@ export async function fetchAIBaseDailyNews(options: AIBaseFetchOptions = {}): Pr
       summary: stripHtml(summaryRaw),
       image,
       publishedAt,
-    }
+    })
   }).filter(Boolean)
 
   return typeof limit === 'number' ? mapped.slice(0, limit) : mapped
