@@ -1,4 +1,4 @@
-export type SourceID = 'aibase' | 'qbitai' | 'jiqizhixin'
+export type SourceID = 'aibase'
 
 export interface Article {
   id: string

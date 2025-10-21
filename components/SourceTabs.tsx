@@ -4,11 +4,8 @@ import { useState, useMemo } from 'react'
 import { Article, SourceID } from '@/lib/types'
 import NewsCard from './NewsCard'
 
-const sources: { id: SourceID | 'all'; name: string }[] = [
-  { id: 'all', name: '全部' },
+const sources: { id: SourceID; name: string }[] = [
   { id: 'aibase', name: 'AIBase' },
-  { id: 'qbitai', name: '量子位 QbitAI' },
-  { id: 'jiqizhixin', name: '机器之心' },
 ]
 
 const timeRanges: { id: 'all' | '24h' | '3d' | '7d' | '30d' | 'custom'; name: string }[] = [
@@ -21,7 +18,7 @@ const timeRanges: { id: 'all' | '24h' | '3d' | '7d' | '30d' | 'custom'; name: st
 ]
 
 export default function SourceTabs({ articles }: { articles: Article[] }) {
-  const [active, setActive] = useState<SourceID | 'all'>('all')
+  const [active, setActive] = useState<SourceID>('aibase')
   const [q, setQ] = useState('')
   const [time, setTime] = useState<'all' | '24h' | '3d' | '7d' | '30d' | 'custom'>('all')
   const [from, setFrom] = useState('')
@@ -29,7 +26,7 @@ export default function SourceTabs({ articles }: { articles: Article[] }) {
   const [refreshing, setRefreshing] = useState(false)
 
   const filtered = useMemo(() => {
-    let list = active === 'all' ? articles : articles.filter((a) => a.source === active)
+    let list = articles
 
     // time range
     let start: number | null = null
@@ -64,9 +61,7 @@ export default function SourceTabs({ articles }: { articles: Article[] }) {
   async function onRefresh() {
     setRefreshing(true)
     try {
-      await fetch('/api/refresh', { method: 'POST' })
       window.location.reload()
-    } catch {
     } finally {
       setRefreshing(false)
     }
@@ -75,7 +70,7 @@ export default function SourceTabs({ articles }: { articles: Article[] }) {
   return (
     <div>
       <div className="controls">
-        <div className="tabs">
+        <div className="tabs tabs-frosted">
           {sources.map((s) => (
             <button key={s.id} className={`tab ${active === s.id ? 'active' : ''}`} onClick={() => setActive(s.id as any)}>
               {s.name}
@@ -103,7 +98,7 @@ export default function SourceTabs({ articles }: { articles: Article[] }) {
               <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
             </>
           )}
-          <button className="refresh" onClick={onRefresh} disabled={refreshing}>{refreshing ? '刷新中…' : '刷新缓存'}</button>
+          <button className="refresh" onClick={onRefresh} disabled={refreshing}>{refreshing ? '刷新中…' : '刷新列表'}</button>
         </div>
       </div>
 

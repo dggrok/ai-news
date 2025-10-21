@@ -1,10 +1,10 @@
 import SourceTabs from '@/components/SourceTabs'
-import { getDailyCachedArticles } from '@/lib/cache'
+import { fetchAIBaseDailyNews } from '@/lib/aibaseApi'
 
-export const revalidate = 600
+export const dynamic = 'force-dynamic'
 
 export default async function Page() {
-  const articles = await getDailyCachedArticles(20)
+  const articles = await fetchAIBaseDailyNews({ pageNo: 1, langType: 'zh_cn', limit: 20 })
   return (
     <section>
       <SourceTabs articles={articles} />
